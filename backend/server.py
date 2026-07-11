@@ -22,6 +22,8 @@ from agent.eligibility import (
     load_schemes, get_missing_fields_for_eligible
 )
 from agent.gemma_agent import extract_profile_updates
+from ocr.local_ocr import run_ocr, ocr_status
+from form_filler.form_filler import fill_scheme_form_sync, SCHEME_FORMS, PLAYWRIGHT_AVAILABLE
 
 from google import genai
 
@@ -33,6 +35,10 @@ class ChatRequest(BaseModel):
 class ScanRequest(BaseModel):
     image: str = ""
     doc_type: str = "aadhar"
+
+class FillFormRequest(BaseModel):
+    scheme_id: str = "pm_kisan"
+    headless: bool = False   # False = show browser window (better for demo!)
 
 app = FastAPI(
     title="Aawaaz Backend API",
@@ -130,7 +136,12 @@ def health():
     return {
         "status": "ok",
         "gemini": gemini_model is not None,
-        "schemes_loaded": len(schemes)
+        "schemes_loaded": len(schemes),
+        "ocr": ocr_status(),
+        "form_filler": {
+            "playwright": PLAYWRIGHT_AVAILABLE,
+            "supported_schemes": list(SCHEME_FORMS.keys()),
+        },
     }
 
 
@@ -217,62 +228,135 @@ def chat(payload: Optional[ChatRequest] = None):
 
 @app.post("/scan")
 def scan(payload: Optional[ScanRequest] = None):
-    """Handle document scan - OCR extraction."""
+    """
+    Handle document scan — LOCAL OCR only.
+    Image data never leaves the device.
+    Tesseract extracts fields; falls back to mock if not installed.
+    """
     if payload is None:
         payload = ScanRequest()
-    image_data = payload.image
-    doc_type = payload.doc_type
 
-    print(f"[Server] Document scan requested: {doc_type}")
+    doc_type = payload.doc_type        # aadhar | ration | passbook
+    image_b64 = payload.image          # base64-encoded photo from frontend camera
 
-    # For hackathon demo: use mock OCR
-    # In production: send to on-device ML Kit
-    # For hackathon demo: smart mock OCR that respects what user already spoke
-    # In production: send image_data to on-device ML Kit / Gemini Vision
-    mock_data = {
-        "aadhar": {
-            "aadhar": "8943-2109-5678",
-            "name": state.profile.name or "राजू कुमार",
-            "age": state.profile.age or 42,
-            "gender": state.profile.gender or "male",
-            "state": state.profile.state or "कर्नाटक"
-        },
-        "ration_card": {
-            "ration_card": "RC-KT-2023-4521",
-            "ration_card_type": state.profile.ration_card_type or "BPL",
-            "family_size": state.profile.family_size or 4
-        },
-        "bank_passbook": {
-            "bank_account": "3456789012",
-            "ifsc": "SBIN0012345"
-        }
-    }
+    print(f"[Server] /scan → doc_type={doc_type}, image={'yes' if image_b64 else 'no (mock)'}")
 
-    extracted = mock_data.get(doc_type, mock_data["aadhar"])
+    # ── Run local OCR (Tesseract on-device) ──────────────────
+    existing = state.profile.to_dict()
+    extracted = run_ocr(image_b64, doc_type, existing_profile=existing)
 
-    # Merge into profile (sensitive data — stays local)
+    # ── Merge into profile ────────────────────────────────────
     state.profile.fill_from_dict(extracted)
-    print(f"[Server] OCR extracted: {extracted}")
 
-    # Build confirmation message
-    if doc_type == "aadhar":
-        confirmation = f"मैंने scan किया: नाम {extracted.get('name', '')}, Aadhar {extracted.get('aadhar', '')}। क्या यह सही है?"
-    elif doc_type == "ration_card":
-        confirmation = f"Ration card scan हुआ: {extracted.get('ration_card_type', '')} card, {extracted.get('family_size', '')} सदस्य। सही है?"
+    # ── Build confirmation message ────────────────────────────
+    if not extracted:
+        confirmation = "Document scan हुआ लेकिन कोई data नहीं मिला। दोबारा try करें।"
+    elif doc_type == "aadhar":
+        name = extracted.get("name", state.profile.name or "")
+        uid  = extracted.get("aadhar", state.profile.aadhar or "")
+        confirmation = (
+            f"Aadhar scan हो गया! नाम: {name}"
+            + (f", Aadhar: {uid}" if uid else "")
+            + "। क्या यह सही है?"
+        )
+    elif doc_type == "ration":
+        card_type = extracted.get("ration_card_type", "")
+        fam_size  = extracted.get("family_size", "")
+        confirmation = (
+            f"Ration card scan हुआ: {card_type} card"
+            + (f", {fam_size} सदस्य" if fam_size else "")
+            + "। ठीक है?"
+        )
+    elif doc_type == "passbook":
+        bank = extracted.get("bank_name", "")
+        acc  = extracted.get("bank_account", "")
+        masked = f"XXXX{acc[-4:]}" if acc and len(acc) >= 4 else acc
+        confirmation = (
+            f"Passbook scan: {bank + ' — ' if bank else ''}Account {masked}। Correct है?"
+        )
     else:
-        confirmation = f"Document scan हो गया। जानकारी save हो गई।"
+        confirmation = "Document scan complete। Data save हो गया।"
 
     eligible = check_eligibility(state.profile, schemes)
 
     return {
         "response": confirmation,
         "extracted": extracted,
-        "mode": "gemma_local",  # OCR always runs locally
+        "fields_count": len(extracted),
+        "mode": "gemma_local",        # OCR always runs locally — offline safe
+        "ocr_engine": ocr_status(),
         "eligible_schemes": [
             {"name": s["name"], "benefit": s["benefit"]}
             for s in eligible
-        ]
+        ],
     }
+
+
+@app.post("/fill-form")
+def fill_form(payload: Optional[FillFormRequest] = None):
+    """
+    Open the real government scheme website and auto-fill the application
+    form using data already collected in the user's profile.
+
+    Returns:
+      - List of fields filled and their values
+      - Screenshot (base64 PNG) of the filled form
+      - Hindi message for TTS playback
+      - Paused at: OTP step (we always stop there)
+
+    The browser window opens visibly (headless=False by default)
+    so judges can watch the form being filled in real time.
+    """
+    if payload is None:
+        payload = FillFormRequest()
+
+    scheme_id = payload.scheme_id
+    profile   = state.profile.to_dict()
+
+    # ── Guard: need minimum profile data ──────────────────────
+    if not profile:
+        return {
+            "success": False,
+            "message": "पहले अपनी जानकारी दें — नाम, Aadhar, और bank details ज़रूरी हैं।",
+        }
+
+    if scheme_id not in SCHEME_FORMS:
+        available = list(SCHEME_FORMS.keys())
+        return {
+            "success": False,
+            "message": f"Scheme '{scheme_id}' नहीं मिली। Available: {', '.join(available)}",
+            "available_schemes": available,
+        }
+
+    # ── Check Playwright available ────────────────────────────
+    if not PLAYWRIGHT_AVAILABLE:
+        return {
+            "success": False,
+            "message": (
+                "Form filler install नहीं है। "
+                "Run: pip install playwright && playwright install chromium"
+            ),
+            "install_cmd": "pip install playwright && playwright install chromium",
+        }
+
+    # ── Run form filler (opens real browser) ──────────────────
+    print(f"[Server] /fill-form → scheme={scheme_id}, profile_fields={list(profile.keys())}")
+    result = fill_scheme_form_sync(scheme_id, profile, headless=payload.headless)
+
+    # ── Log what happened ─────────────────────────────────────
+    if result.get("success"):
+        n = len(result.get("fields_filled", []))
+        print(f"[Server] Form fill complete: {n} fields filled for {scheme_id}")
+    else:
+        print(f"[Server] Form fill failed: {result.get('error', 'unknown')}")
+
+    # ── Add profile summary to response ──────────────────────
+    result["profile_used"] = {
+        k: ("XXXX" + str(v)[-4:] if k in ("aadhar", "bank_account") else v)
+        for k, v in profile.items()
+    }
+
+    return result
 
 
 @app.get("/status")
