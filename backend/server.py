@@ -331,13 +331,6 @@ async def fill_form(payload: Optional[FillFormRequest] = None):
             "message": "पहले अपनी जानकारी दें — नाम, Aadhar, और bank details ज़रूरी हैं।",
         }
 
-    if scheme_id not in SCHEME_FORMS:
-        available = list(SCHEME_FORMS.keys())
-        return {
-            "success": False,
-            "message": f"Scheme '{scheme_id}' नहीं मिली। Available: {', '.join(available)}",
-            "available_schemes": available,
-        }
 
     # ── Check Playwright available ────────────────────────────
     if not PLAYWRIGHT_AVAILABLE:

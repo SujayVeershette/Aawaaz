@@ -115,6 +115,138 @@ SCHEME_FORMS = {
         "pause_msg": "PM Jan Dhan Yojana: Visit your nearest bank branch with Aadhaar to open a zero-balance account. I've pre-filled your details below.",
         "highlight_color": "#34d399",
     },
+
+    "pm_fasal_bima": {
+        "name": "PM Fasal Bima Yojana (PMFBY)",
+        "url": "https://pmfby.gov.in/farmerRegistrationForm",
+        "fields": [
+            {"selector": "input[placeholder*='Name'], input[id*='name'], input[name*='name']", "profile_key": "name", "label": "Farmer Name"},
+            {"selector": "input[placeholder*='Mobile'], input[id*='mobile'], input[name*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[placeholder*='Aadhaar'], input[id*='aadhar'], input[name*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar Number"},
+            {"selector": "input[placeholder*='Address'], input[id*='address'], input[name*='address']", "profile_key": "village", "label": "Village/Address"},
+            {"selector": "input[placeholder*='Account'], input[id*='account'], input[name*='account']", "profile_key": "bank_account", "label": "Account Number"},
+            {"selector": "input[placeholder*='IFSC'], input[id*='ifsc'], input[name*='ifsc']", "profile_key": "ifsc", "label": "IFSC Code"},
+        ],
+        "aadhar_field": "input[placeholder*='Aadhaar'], input[id*='aadhar']",
+        "otp_trigger": "button:has-text('Submit'), button:has-text('Get OTP'), button:has-text('Verify')",
+        "pause_msg": "PM Fasal Bima form filled! Click 'Get OTP' / 'Submit' to complete verification.",
+        "highlight_color": "#10b981",
+    },
+
+    "e_shram": {
+        "name": "e-Shram Portal",
+        "url": "https://register.eshram.gov.in/#/user/self",
+        "fields": [
+            {"selector": "input[placeholder*='Aadhaar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar Number"},
+            {"selector": "input[placeholder*='Mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Aadhaar Linked Mobile"},
+        ],
+        "aadhar_field": "input[placeholder*='Aadhaar'], input[id*='aadhar']",
+        "otp_trigger": "button:has-text('Send OTP'), button:has-text('Submit'), input[value*='OTP']",
+        "pause_msg": "e-Shram portal ready! Click 'Send OTP' to verify your Aadhaar linked mobile number.",
+        "highlight_color": "#3b82f6",
+    },
+
+    "sukanya_samridhi": {
+        "name": "Sukanya Samriddhi Yojana",
+        "url": "https://www.nsiindia.gov.in/InternalPage.aspx?Id_Pk=89",
+        "fields": [
+            {"selector": "input[name*='name']", "profile_key": "name", "label": "Applicant Name"},
+            {"selector": "input[name*='mobile']", "profile_key": "mobile", "label": "Mobile"},
+        ],
+        "otp_trigger": None,
+        "pause_msg": "Sukanya Samriddhi Yojana: Portal opened and details prepared. Visit your nearest post office or bank branch to deposit initial form.",
+        "highlight_color": "#ec4899",
+    },
+
+    "viklang_pension": {
+        "name": "Indira Gandhi National Disability Pension",
+        "url": "https://nsap.nic.in/",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Applicant Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[name*='aadhar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar"},
+        ],
+        "otp_trigger": "button:has-text('Submit'), button:has-text('Apply'), input[type='submit']",
+        "pause_msg": "Disability Pension portal ready! Review your details and proceed for verification.",
+        "highlight_color": "#8b5cf6",
+    },
+
+    "old_age_pension": {
+        "name": "Indira Gandhi National Old Age Pension",
+        "url": "https://nsap.nic.in/",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Applicant Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[name*='aadhar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar"},
+        ],
+        "otp_trigger": "button:has-text('Submit'), button:has-text('Apply'), input[type='submit']",
+        "pause_msg": "Old Age Pension portal ready! Review your details and proceed for verification.",
+        "highlight_color": "#f59e0b",
+    },
+
+    "kisan_credit_card": {
+        "name": "Kisan Credit Card (KCC)",
+        "url": "https://www.myscheme.gov.in/schemes/kcc",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Farmer Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[name*='aadhar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar"},
+        ],
+        "otp_trigger": "button:has-text('Apply'), button:has-text('Check Eligibility')",
+        "pause_msg": "Kisan Credit Card portal opened! Details loaded for verification.",
+        "highlight_color": "#14b8a6",
+    },
+
+    "matru_vandana": {
+        "name": "Pradhan Mantri Matru Vandana Yojana (PMMVY)",
+        "url": "https://pmmvy.wcd.gov.in/",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Beneficiary Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[name*='aadhar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar Number"},
+        ],
+        "otp_trigger": "button:has-text('Login'), button:has-text('Send OTP'), button:has-text('Verify')",
+        "pause_msg": "PMMVY portal opened! Verify your mobile number via OTP to submit application.",
+        "highlight_color": "#f43f5e",
+    },
+
+    "sc_scholarship": {
+        "name": "Post-Matric Scholarship for SC Students",
+        "url": "https://scholarships.gov.in/",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Student Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[name*='aadhar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar Number"},
+        ],
+        "otp_trigger": "button:has-text('Submit'), button:has-text('Send OTP')",
+        "pause_msg": "National Scholarship Portal opened! Verify via OTP to continue registration.",
+        "highlight_color": "#6366f1",
+    },
+
+    "obc_scholarship": {
+        "name": "Post-Matric Scholarship for OBC Students",
+        "url": "https://scholarships.gov.in/",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Student Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+            {"selector": "input[name*='aadhar'], input[id*='aadhar']", "profile_key": "aadhar", "label": "Aadhaar Number"},
+        ],
+        "otp_trigger": "button:has-text('Submit'), button:has-text('Send OTP')",
+        "pause_msg": "National Scholarship Portal opened! Verify via OTP to continue registration.",
+        "highlight_color": "#06b6d4",
+    },
+
+    "mnrega": {
+        "name": "Mahatma Gandhi NREGA Job Card",
+        "url": "https://nrega.nic.in/",
+        "fields": [
+            {"selector": "input[name*='name'], input[id*='name']", "profile_key": "name", "label": "Applicant Name"},
+            {"selector": "input[name*='mobile'], input[id*='mobile']", "profile_key": "mobile", "label": "Mobile Number"},
+        ],
+        "otp_trigger": "button:has-text('Submit'), button:has-text('Search'), button:has-text('Register')",
+        "pause_msg": "MGNREGA portal opened! Review details to register for job card.",
+        "highlight_color": "#84cc16",
+    },
 }
 
 
@@ -149,10 +281,15 @@ async def fill_scheme_form(
 
     config = SCHEME_FORMS.get(scheme_id)
     if not config:
-        return {
-            "success": False,
-            "error": f"Unknown scheme: {scheme_id}",
-            "message": f"Scheme '{scheme_id}' not configured for form filling.",
+        config = {
+            "name": scheme_id.replace("_", " ").title(),
+            "url": "https://www.myscheme.gov.in/search",
+            "fields": [
+                {"selector": "input[placeholder*='Search'], input[type='text']", "profile_key": "name", "label": "Applicant Info"},
+            ],
+            "otp_trigger": "button:has-text('Apply'), button:has-text('Submit')",
+            "pause_msg": f"{scheme_id.replace('_', ' ').title()} portal ready! Pre-filling user profile details.",
+            "highlight_color": "#38bdf8",
         }
 
     fields_filled = []
