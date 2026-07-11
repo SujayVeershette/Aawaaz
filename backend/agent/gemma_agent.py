@@ -80,7 +80,7 @@ def query_gemma_ollama(prompt: str, model: str = "gemma4:e2b") -> Optional[str]:
                         "stop": ["\nUser:", "\nAawaaz:"]
                     }
                 },
-                timeout=30
+                timeout=90
             )
             if response.status_code == 200:
                 print(f"[Ollama] Successful local response from model '{target_model}'")
