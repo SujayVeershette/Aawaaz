@@ -410,6 +410,20 @@ def reset():
     return {"status": "reset", "message": "नई शुरुआत हो गई।"}
 
 
+# ── Serve Frontend Static Files (http://localhost:8000/index.html) ─────────
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+if os.path.exists(frontend_path):
+    @app.get("/")
+    @app.get("/index.html")
+    def serve_index():
+        return FileResponse(os.path.join(frontend_path, "index.html"))
+
+    app.mount("/", StaticFiles(directory=frontend_path), name="frontend")
+
+
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "="*50)
