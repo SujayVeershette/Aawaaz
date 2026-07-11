@@ -852,9 +852,20 @@
   function setMode(mode) {
     const gemini = document.getElementById('pill-gemini');
     const gemma = document.getElementById('pill-gemma');
-    if (mode === 'gemma_local') {
+    if (mode === 'gemma_local' || mode === 'gemma_local_pii_shield') {
       gemini.style.display = 'none';
       gemma.style.display = 'flex';
+      if (mode === 'gemma_local_pii_shield') {
+        gemma.innerHTML = '<span class="status-dot status-local"></span> 🔒 Local PII Shield (Gemma 4)';
+        gemma.style.background = '#431407';
+        gemma.style.borderColor = '#f97316';
+        gemma.style.color = '#ffedd5';
+      } else {
+        gemma.innerHTML = '<span class="status-dot status-local"></span> 📴 Local Gemma 4 Engine (Offline Mode)';
+        gemma.style.background = '#064e3b';
+        gemma.style.borderColor = '#10b981';
+        gemma.style.color = '#d1fae5';
+      }
     } else {
       gemini.style.display = 'flex';
       gemma.style.display = 'none';

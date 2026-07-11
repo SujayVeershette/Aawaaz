@@ -178,11 +178,20 @@ def chat(payload: Optional[ChatRequest] = None):
                 print(f"[Server] Field '{field_name}' asked 2x without extraction — skipping (Gemma 4 local error recovery)")
                 next_q = get_next_question(state.profile, schemes, skipped_fields=state.skipped_fields)
 
-    # Call Gemini ONLY if not simulated_offline
+    # ── Privacy & PII Shield: Auto-route to local Gemma 4 for confidential fields ──
+    is_confidential_turn = False
+    if next_q and next_q["field"] in ("aadhar", "bank_account", "ifsc"):
+        is_confidential_turn = True
+        print(f"[Server] 🔒 Confidential PII field requested ('{next_q['field']}'). Auto-switching to Local Gemma 4 (gemma4:e2b) PII Shield!")
+    elif any(char.isdigit() for char in user_message) and len([c for c in user_message if c.isdigit()]) >= 8:
+        is_confidential_turn = True
+        print("[Server] 🔒 Confidential spoken numbers (8+ digits) detected. Auto-switching to Local Gemma 4 PII Shield!")
+
+    # Call Gemini ONLY if not simulated_offline AND not a confidential PII turn
     agent_response = None
     mode = "gemini_live"
 
-    if not payload.simulated_offline and gemini_client:
+    if not payload.simulated_offline and not is_confidential_turn and gemini_client:
         try:
             prompt = build_gemini_prompt(user_message)
             response = gemini_client.models.generate_content(
@@ -196,9 +205,9 @@ def chat(payload: Optional[ChatRequest] = None):
             print(f"[Server] Gemini error: {e}")
             agent_response = None
 
-    # Fallback to local Gemma 4 / rule-based (Gemma Local)
-    if not agent_response or payload.simulated_offline:
-        mode = "gemma_local"
+    # Fallback / PII Shield routing to local Gemma 4 (gemma4:e2b) & rule-based engine
+    if not agent_response or payload.simulated_offline or is_confidential_turn:
+        mode = "gemma_local_pii_shield" if is_confidential_turn else "gemma_local"
         from agent.gemma_agent import query_gemma_ollama, build_prompt
         # Attempt local Gemma 4 (e2b) inference if Ollama is running locally
         try:
@@ -211,7 +220,9 @@ def chat(payload: Optional[ChatRequest] = None):
             pass
         if not agent_response:
             agent_response = get_rule_based_response(user_message)
-            if payload.simulated_offline:
+            if is_confidential_turn:
+                print("[Server] 🔒 Local PII Shield -> Rule-based / Gemma 4 handled confidential turn cleanly")
+            elif payload.simulated_offline:
                 print("[Server] Simulated Offline -> Gemma Local (rule-based engine + Gemma 4 fall-through) triggered")
 
     state.add_turn("agent", agent_response)
