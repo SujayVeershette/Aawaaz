@@ -182,7 +182,10 @@ async def fill_scheme_form(
         try:
             # ── 1. Navigate to form ──
             print(f"[FormFiller] Opening {config['url']}")
-            await page.goto(config["url"], wait_until="domcontentloaded", timeout=20000)
+            try:
+                await page.goto(config["url"], wait_until="domcontentloaded", timeout=30000)
+            except Exception as e:
+                print(f"[FormFiller] goto warning/timeout ({e}), continuing with partial DOM...")
             await page.wait_for_timeout(2000)  # let JS render
 
             # ── 2. Fill Aadhaar field first (many portals start with Aadhaar lookup) ──

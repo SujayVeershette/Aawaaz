@@ -23,7 +23,7 @@ from agent.eligibility import (
 )
 from agent.gemma_agent import extract_profile_updates
 from ocr.local_ocr import run_ocr, ocr_status
-from form_filler.form_filler import fill_scheme_form_sync, SCHEME_FORMS, PLAYWRIGHT_AVAILABLE
+from form_filler.form_filler import fill_scheme_form, fill_scheme_form_sync, SCHEME_FORMS, PLAYWRIGHT_AVAILABLE
 
 from google import genai
 
@@ -293,7 +293,7 @@ def scan(payload: Optional[ScanRequest] = None):
 
 
 @app.post("/fill-form")
-def fill_form(payload: Optional[FillFormRequest] = None):
+async def fill_form(payload: Optional[FillFormRequest] = None):
     """
     Open the real government scheme website and auto-fill the application
     form using data already collected in the user's profile.
@@ -339,9 +339,9 @@ def fill_form(payload: Optional[FillFormRequest] = None):
             "install_cmd": "pip install playwright && playwright install chromium",
         }
 
-    # ── Run form filler (opens real browser) ──────────────────
+    # ── Run form filler (opens real browser directly in async event loop) ──────────────────
     print(f"[Server] /fill-form → scheme={scheme_id}, profile_fields={list(profile.keys())}")
-    result = fill_scheme_form_sync(scheme_id, profile, headless=payload.headless)
+    result = await fill_scheme_form(scheme_id, profile, headless=payload.headless)
 
     # ── Log what happened ─────────────────────────────────────
     if result.get("success"):
