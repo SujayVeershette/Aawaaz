@@ -11,6 +11,12 @@ from typing import Optional
 import os
 import sys
 import json
+import asyncio
+if sys.platform == "win32":
+    try:
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    except Exception:
+        pass
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -360,7 +366,41 @@ async def fill_form(payload: Optional[FillFormRequest] = None):
 
     # ── Run form filler (opens real browser directly in async event loop) ──────────────────
     print(f"[Server] /fill-form → scheme={scheme_id}, profile_fields={list(profile.keys())}")
-    result = await fill_scheme_form(scheme_id, profile, headless=payload.headless)
+    try:
+        result = await fill_scheme_form(scheme_id, profile, headless=payload.headless)
+    except NotImplementedError:
+        print("[Server] ⚠️ Windows event loop limitation (NotImplementedError). Self-healing via dedicated Proactor subprocess...")
+        import subprocess
+        import tempfile
+        import anyio
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".json", encoding="utf-8") as tf:
+            json.dump({"scheme_id": scheme_id, "profile": profile, "headless": payload.headless}, tf)
+            tf_path = tf.name
+        res_path = tf_path + ".res.json"
+        
+        script = f"""import asyncio, json, sys, os
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+sys.path.insert(0, r'{os.path.dirname(os.path.abspath(__file__))}')
+from form_filler.form_filler import fill_scheme_form
+with open(r'{tf_path}', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+res = asyncio.run(fill_scheme_form(data['scheme_id'], data['profile'], headless=data['headless']))
+with open(r'{res_path}', 'w', encoding='utf-8') as f:
+    json.dump(res, f, ensure_ascii=False)
+"""
+        def _run_subproc():
+            subprocess.run([sys.executable, "-c", script], cwd=os.path.dirname(os.path.abspath(__file__)))
+        await anyio.to_thread.run_sync(_run_subproc)
+        try:
+            with open(res_path, "r", encoding="utf-8") as f:
+                result = json.load(f)
+            if os.path.exists(res_path):
+                os.remove(res_path)
+        except Exception as e:
+            result = {"success": False, "error": f"Subprocess fallback failed: {e}", "message": "Form filler subprocess error."}
+        if os.path.exists(tf_path):
+            os.remove(tf_path)
 
     # ── Log what happened ─────────────────────────────────────
     if result.get("success"):
