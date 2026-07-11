@@ -603,7 +603,7 @@
 </div>
 
 <script>
-  const API = 'http://localhost:8000';
+  const API = window.location.origin.includes('file:') ? 'http://localhost:8000' : window.location.origin;
   let isListening = false;
   let autoListen = false;
   let isSpeaking = false;
