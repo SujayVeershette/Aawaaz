@@ -178,14 +178,18 @@ def chat(payload: Optional[ChatRequest] = None):
                 print(f"[Server] Field '{field_name}' asked 2x without extraction — skipping (Gemma 4 local error recovery)")
                 next_q = get_next_question(state.profile, schemes, skipped_fields=state.skipped_fields)
 
-    # ── Privacy & PII Shield: Auto-route to local Gemma 4 for confidential fields ──
+    # ── Privacy & PII Shield: Auto-route to local Gemma 4 for confidential fields (DPDP Act 2023) ──
+    CONFIDENTIAL_FIELDS = {
+        "aadhar", "bank_account", "ifsc", "ration_card", "mobile", 
+        "caste_category", "disability_percentage", "pregnancy_status"
+    }
     is_confidential_turn = False
-    if next_q and next_q["field"] in ("aadhar", "bank_account", "ifsc"):
+    if next_q and next_q["field"] in CONFIDENTIAL_FIELDS:
         is_confidential_turn = True
-        print(f"[Server] 🔒 Confidential PII field requested ('{next_q['field']}'). Auto-switching to Local Gemma 4 (gemma4:e2b) PII Shield!")
+        print(f"[Server] 🔒 Confidential PII/Sensitive turn ('{next_q['field']}'). Auto-switching to Local Gemma 4 PII Shield!")
     elif any(char.isdigit() for char in user_message) and len([c for c in user_message if c.isdigit()]) >= 8:
         is_confidential_turn = True
-        print("[Server] 🔒 Confidential spoken numbers (8+ digits) detected. Auto-switching to Local Gemma 4 PII Shield!")
+        print("[Server] 🔒 Spoken numerical PII (8+ digits: Aadhaar/Mobile/Account) detected. Auto-switching to Local Gemma 4 PII Shield!")
 
     # Call Gemini ONLY if not simulated_offline AND not a confidential PII turn
     agent_response = None
