@@ -166,6 +166,11 @@ def chat(payload: Optional[ChatRequest] = None):
             state.profile.fill_from_dict(updates)
             state.field_ask_counts[field_name] = 0
             print(f"[Server] Extracted from speech: {updates}")
+            try:
+                from storage.local_db import save_profile
+                save_profile(state.profile.to_dict())
+            except Exception:
+                pass
         else:
             state.field_ask_counts[field_name] = state.field_ask_counts.get(field_name, 0) + 1
             if state.field_ask_counts[field_name] >= 2:
@@ -276,6 +281,12 @@ def scan(payload: Optional[ScanRequest] = None):
         )
     else:
         confirmation = "Document scan complete। Data save हो गया।"
+
+    try:
+        from storage.local_db import save_profile
+        save_profile(state.profile.to_dict())
+    except Exception:
+        pass
 
     eligible = check_eligibility(state.profile, schemes)
 
