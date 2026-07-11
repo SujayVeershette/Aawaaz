@@ -64,8 +64,8 @@ def build_prompt(state: ConversationState, user_input: str, schemes: list) -> st
     )
 
 
-def query_gemma_ollama(prompt: str, model: str = "gemma2:2b") -> Optional[str]:
-    """Query Gemma via Ollama (recommended for hackathon)."""
+def query_gemma_ollama(prompt: str, model: str = "gemma4:e2b") -> Optional[str]:
+    """Query Gemma 4 via Ollama (E2B/E4B for local-first inference)."""
     try:
         response = requests.post(
             "http://localhost:11434/api/generate",
@@ -89,9 +89,9 @@ def query_gemma_ollama(prompt: str, model: str = "gemma2:2b") -> Optional[str]:
 
 
 def query_gemma_llama_cpp(prompt: str, model_path: str = None) -> Optional[str]:
-    """Query Gemma via llama.cpp binary."""
+    """Query Gemma 4 via llama.cpp binary."""
     if model_path is None:
-        model_path = os.environ.get("GEMMA_MODEL_PATH", "./models/gemma-2b.gguf")
+        model_path = os.environ.get("GEMMA_MODEL_PATH", "./models/gemma4-e2b.gguf")
 
     if not os.path.exists(model_path):
         return None

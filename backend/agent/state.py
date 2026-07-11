@@ -97,6 +97,8 @@ class ConversationState:
         self.current_focus_scheme: Optional[str] = None
         self.session_start = datetime.now().isoformat()
         self.turn_count: int = 0
+        self.field_ask_counts: dict = {}  # Tracks how many times a field was asked without extraction
+        self.skipped_fields: set = set()  # Fields skipped after 2 retries (Gemma 4 local error recovery)
 
     def add_turn(self, role: str, content: str):
         """Add a conversation turn to history."""

@@ -147,12 +147,20 @@ def chat(payload: Optional[ChatRequest] = None):
     state.add_turn("user", user_message)
 
     # Extract profile fields from speech BEFORE calling Gemini
-    next_q = get_next_question(state.profile, schemes)
+    next_q = get_next_question(state.profile, schemes, skipped_fields=state.skipped_fields)
     if next_q:
-        updates = extract_profile_updates(user_message, next_q["field"])
+        field_name = next_q["field"]
+        updates = extract_profile_updates(user_message, field_name)
         if updates:
             state.profile.fill_from_dict(updates)
+            state.field_ask_counts[field_name] = 0
             print(f"[Server] Extracted from speech: {updates}")
+        else:
+            state.field_ask_counts[field_name] = state.field_ask_counts.get(field_name, 0) + 1
+            if state.field_ask_counts[field_name] >= 2:
+                state.skipped_fields.add(field_name)
+                print(f"[Server] Field '{field_name}' asked 2x without extraction — skipping (Gemma 4 local error recovery)")
+                next_q = get_next_question(state.profile, schemes, skipped_fields=state.skipped_fields)
 
     # Call Gemini ONLY if not simulated_offline
     agent_response = None
@@ -172,12 +180,23 @@ def chat(payload: Optional[ChatRequest] = None):
             print(f"[Server] Gemini error: {e}")
             agent_response = None
 
-    # Fallback to rule-based (Gemma Local)
+    # Fallback to local Gemma 4 / rule-based (Gemma Local)
     if not agent_response or payload.simulated_offline:
-        agent_response = get_rule_based_response(user_message)
         mode = "gemma_local"
-        if payload.simulated_offline:
-            print("[Server] Simulated Offline -> Gemma Local rule-based triggered")
+        from agent.gemma_agent import query_gemma_ollama, build_prompt
+        # Attempt local Gemma 4 (e2b) inference if Ollama is running locally
+        try:
+            gemma_prompt = build_prompt(state, user_message, schemes)
+            gemma_resp = query_gemma_ollama(gemma_prompt, model="gemma4:e2b")
+            if gemma_resp:
+                agent_response = gemma_resp
+                print("[Server] Gemma 4 (gemma4:e2b) local inference successful")
+        except Exception as e:
+            pass
+        if not agent_response:
+            agent_response = get_rule_based_response(user_message)
+            if payload.simulated_offline:
+                print("[Server] Simulated Offline -> Gemma Local (rule-based engine + Gemma 4 fall-through) triggered")
 
     state.add_turn("agent", agent_response)
 

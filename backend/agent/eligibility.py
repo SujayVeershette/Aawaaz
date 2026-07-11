@@ -195,12 +195,12 @@ def get_missing_fields_for_eligible(profile: UserProfile, schemes: list) -> dict
     return missing_map
 
 
-def get_next_question(profile: UserProfile, schemes: list, language: str = "hi") -> Optional[dict]:
+def get_next_question(profile: UserProfile, schemes: list, language: str = "hi", skipped_fields: set = None) -> Optional[dict]:
     """
     THE CORE AGENT DECISION.
     Looks at all schemes, finds the most blocking missing field,
     and returns the question to ask next.
-    This is what makes Aawaaz adaptive — nothing is hardcoded.
+    Supports skipped_fields for Gemma 4 local error recovery when extraction fails.
     """
     # Count how many schemes each field is blocking
     field_block_count = {}
@@ -208,6 +208,8 @@ def get_next_question(profile: UserProfile, schemes: list, language: str = "hi")
 
     for scheme in schemes:
         missing = profile.get_missing_fields(scheme["required_fields"])
+        if skipped_fields:
+            missing = [f for f in missing if f not in skipped_fields]
         questions = scheme.get(f"questions_{language}", {})
 
         for field in missing:
