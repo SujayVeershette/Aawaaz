@@ -517,17 +517,17 @@
       <p>AAWAAZ · VOICE OF THE PEOPLE</p>
     </div>
     <div class="status-pills">
-      <button class="pill pill-network online" id="btn-network" onclick="toggleOfflineMode()" title="Click to simulate 2G / Offline drop">
+      <button class="pill pill-network online" id="btn-network" onclick="toggleOfflineMode()" title="Click to simulate Air-Gapped / Zero-Connectivity Edge Mode">
         <div class="pill-dot" id="network-dot"></div>
-        <span id="network-label">📶 4G Online</span>
+        <span id="network-label">⚡ Cloud Edge Connected</span>
       </button>
       <div class="pill pill-gemini" id="pill-gemini">
         <div class="pill-dot"></div>
-        Gemini Live
+        Cloud Intelligence (Live)
       </div>
       <div class="pill pill-gemma" id="pill-gemma">
         <div class="pill-dot"></div>
-        🔒 Gemma Local
+        🛡️ On-Device Edge Engine
       </div>
     </div>
   </header>
@@ -619,16 +619,16 @@
     const label = document.getElementById('network-label');
     if (isOfflineMode) {
       btn.className = 'pill pill-network offline';
-      label.textContent = '📴 Offline (2G/No Net)';
+      label.textContent = '🛡️ Air-Gapped Edge Mode';
       setMode('gemma_local');
-      addBubble('agent', '📴 [Offline Demo Active] इंटरनेट connection नहीं है। अब आवाज़ local-first mode (Gemma + Local DB Queue) पर चल रहा है। आपकी जानकारी 100% local सुरक्षित रहेगी।');
-      speakHindi('इंटरनेट connection नहीं है। अब आवाज़ local mode पर चल रहा है।');
+      addBubble('agent', '🛡️ [Air-Gapped Edge Mode Active] Cloud connectivity severed. Autonomous On-Device Engine (Gemma 4 + Local Encrypted Store) activated. Data remains 100% locally contained.');
+      speakHindi('क्लाउड कनेक्शन बंद है। अब आवाज़ ऑन-डिवाइस ऑटोनॉमस इंजन पर चल रहा है। आपकी जानकारी पूरी तरह सुरक्षित है।');
     } else {
       btn.className = 'pill pill-network online';
-      label.textContent = '📶 4G Online';
+      label.textContent = '⚡ Cloud Edge Connected';
       setMode('gemini_live');
-      addBubble('agent', '📶 [Online Restored] इंटरनेट वापस आ गया। Gemini 2.0 Live active.');
-      speakHindi('इंटरनेट वापस आ गया। Gemini Live active.');
+      addBubble('agent', '⚡ [Cloud Edge Restored] High-throughput connectivity re-established. Multi-modal Cloud Engine active.');
+      speakHindi('क्लाउड कनेक्टिविटी वापस आ गई है। सिस्टम ऑनलाइन है।');
     }
     updateOrbStatus();
   }
@@ -861,7 +861,7 @@
         gemma.style.borderColor = '#f97316';
         gemma.style.color = '#ffedd5';
       } else {
-        gemma.innerHTML = '<span class="status-dot status-local"></span> 📴 Local Gemma 4 Engine (Offline Mode)';
+        gemma.innerHTML = '<span class="status-dot status-local"></span> 🛡️ On-Device Edge Engine (Gemma 4 Autonomous)';
         gemma.style.background = '#064e3b';
         gemma.style.borderColor = '#10b981';
         gemma.style.color = '#d1fae5';
