@@ -1,0 +1,42 @@
+# Environments
+.env
+.env.local
+.env.*
+!.env.example
+
+# Virtual Environments (uv / pip / venv)
+.venv/
+venv/
+env/
+backend/.venv/
+backend/venv/
+.python-version
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Node & Build
+node_modules/
+dist/
+build/
+*.egg-info/
+
+# Local Aawaaz Data & Storage
+~/.aawaaz/
+*.db
+*.sqlite
+*.sqlite3
+*.enc

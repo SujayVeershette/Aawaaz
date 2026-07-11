@@ -1,0 +1,255 @@
+[
+  {
+    "id": "pm_kisan",
+    "name": "PM-KISAN",
+    "full_name": "Pradhan Mantri Kisan Samman Nidhi",
+    "description": "₹6000 per year direct income support for farmers",
+    "benefit": "₹6000/year in 3 installments of ₹2000",
+    "required_fields": ["name", "aadhar", "bank_account", "ifsc", "land_acres", "state"],
+    "eligibility": {
+      "occupation": ["farmer"],
+      "land_acres_max": 5,
+      "excluded_categories": ["government_employee", "income_tax_payer"]
+    },
+    "apply_url": "https://pmkisan.gov.in",
+    "questions_hi": {
+      "land_acres": "Aapke paas kitni zameen hai? Acres mein batayein.",
+      "bank_account": "Aapka bank account number kya hai?",
+      "ifsc": "Aapki bank ki IFSC code kya hai?"
+    }
+  },
+  {
+    "id": "pmay_g",
+    "name": "PMAY-G",
+    "full_name": "Pradhan Mantri Awaas Yojana - Gramin",
+    "description": "Free pucca house for rural homeless families",
+    "benefit": "₹1.2 lakh - ₹1.3 lakh for house construction",
+    "required_fields": ["name", "aadhar", "bank_account", "ifsc", "state", "family_size", "income_annual"],
+    "eligibility": {
+      "residence": ["rural"],
+      "housing": ["homeless", "kutcha_house"],
+      "income_annual_max": 300000,
+      "excluded_categories": ["pucca_house_owner"]
+    },
+    "apply_url": "https://pmayg.nic.in",
+    "questions_hi": {
+      "housing": "Aap abhi kahan rehte hain? Pakka ghar hai ya kachcha?",
+      "income_annual": "Aapke ghar ki saal bhar ki kamai kitni hai?"
+    }
+  },
+  {
+    "id": "ayushman_bharat",
+    "name": "Ayushman Bharat",
+    "full_name": "Pradhan Mantri Jan Arogya Yojana",
+    "description": "₹5 lakh health insurance per family per year",
+    "benefit": "₹5 lakh/year free hospital treatment",
+    "required_fields": ["name", "aadhar", "family_size", "ration_card", "state"],
+    "eligibility": {
+      "income_annual_max": 500000,
+      "ration_card_type": ["BPL", "AAY", "PHH"]
+    },
+    "apply_url": "https://pmjay.gov.in",
+    "questions_hi": {
+      "ration_card": "Aapke paas ration card hai? Kaun sa — BPL, AAY, ya koi aur?",
+      "family_size": "Aapke parivar mein kitne log hain?"
+    }
+  },
+  {
+    "id": "pm_ujjwala",
+    "name": "PM Ujjwala Yojana",
+    "full_name": "Pradhan Mantri Ujjwala Yojana",
+    "description": "Free LPG connection for women from BPL families",
+    "benefit": "Free LPG connection + first refill subsidy",
+    "required_fields": ["name", "aadhar", "gender", "ration_card", "state", "bank_account"],
+    "eligibility": {
+      "gender": ["female"],
+      "ration_card_type": ["BPL", "AAY"],
+      "lpg_connection": false
+    },
+    "apply_url": "https://pmuy.gov.in",
+    "questions_hi": {
+      "lpg_connection": "Kya aapke ghar mein pehle se LPG cylinder connection hai?"
+    }
+  },
+  {
+    "id": "jan_dhan",
+    "name": "Jan Dhan Yojana",
+    "full_name": "Pradhan Mantri Jan Dhan Yojana",
+    "description": "Zero balance bank account with RuPay debit card and insurance",
+    "benefit": "Free bank account + ₹2 lakh accident insurance + ₹30,000 life cover",
+    "required_fields": ["name", "aadhar", "address", "state"],
+    "eligibility": {
+      "bank_account": false
+    },
+    "apply_url": "https://pmjdy.gov.in",
+    "questions_hi": {
+      "bank_account": "Kya aapka kisi bhi bank mein account hai?"
+    }
+  },
+  {
+    "id": "e_shram",
+    "name": "e-Shram Card",
+    "full_name": "e-Shram National Database of Unorganised Workers",
+    "description": "Registration card for unorganised workers with accident insurance",
+    "benefit": "₹2 lakh accident insurance + priority for welfare schemes",
+    "required_fields": ["name", "aadhar", "mobile", "occupation", "state", "bank_account"],
+    "eligibility": {
+      "occupation": ["daily_wage", "farmer", "construction", "domestic_worker", "street_vendor"],
+      "age_min": 16,
+      "age_max": 59,
+      "epfo_esic": false
+    },
+    "apply_url": "https://eshram.gov.in",
+    "questions_hi": {
+      "occupation": "Aap kya kaam karte hain? Jaise — khet mazdoor, construction, ghar mein kaam?"
+    }
+  },
+  {
+    "id": "pm_fasal_bima",
+    "name": "PM Fasal Bima",
+    "full_name": "Pradhan Mantri Fasal Bima Yojana",
+    "description": "Crop insurance for farmers against natural disasters",
+    "benefit": "Up to full crop loss compensation based on land",
+    "required_fields": ["name", "aadhar", "land_acres", "crop_type", "state", "bank_account"],
+    "eligibility": {
+      "occupation": ["farmer"],
+      "land_acres_min": 0.1
+    },
+    "apply_url": "https://pmfby.gov.in",
+    "questions_hi": {
+      "crop_type": "Aap kaunsi fasal ugaate hain? Jaise — gehu, dhan, makka?"
+    }
+  },
+  {
+    "id": "sukanya_samridhi",
+    "name": "Sukanya Samridhi Yojana",
+    "full_name": "Sukanya Samridhi Yojana",
+    "description": "High-interest savings scheme for girl child education and marriage",
+    "benefit": "8.2% interest rate + tax benefits",
+    "required_fields": ["name", "aadhar", "girl_child_age", "bank_account", "state"],
+    "eligibility": {
+      "girl_child_age_max": 10
+    },
+    "apply_url": "https://www.indiapost.gov.in",
+    "questions_hi": {
+      "girl_child_age": "Aapki beti ki umar kitni hai?"
+    }
+  },
+  {
+    "id": "viklang_pension",
+    "name": "Viklang Pension",
+    "full_name": "Indira Gandhi National Disability Pension Scheme",
+    "description": "Monthly pension for people with 80%+ disability",
+    "benefit": "₹300-₹500/month pension",
+    "required_fields": ["name", "aadhar", "disability_percentage", "income_annual", "state", "bank_account"],
+    "eligibility": {
+      "disability_percentage_min": 80,
+      "income_annual_max": 100000
+    },
+    "apply_url": "https://nsap.nic.in",
+    "questions_hi": {
+      "disability_percentage": "Kitne percent viklangata certificate mein likha hai?"
+    }
+  },
+  {
+    "id": "old_age_pension",
+    "name": "Old Age Pension",
+    "full_name": "Indira Gandhi National Old Age Pension Scheme",
+    "description": "Monthly pension for destitute elderly",
+    "benefit": "₹200-₹500/month",
+    "required_fields": ["name", "aadhar", "age", "income_annual", "state", "bank_account"],
+    "eligibility": {
+      "age_min": 60,
+      "income_annual_max": 100000
+    },
+    "apply_url": "https://nsap.nic.in",
+    "questions_hi": {
+      "age": "Aapki umar kitni hai?"
+    }
+  },
+  {
+    "id": "kisan_credit_card",
+    "name": "Kisan Credit Card",
+    "full_name": "Kisan Credit Card Scheme",
+    "description": "Short-term crop loans at low interest for farmers",
+    "benefit": "Up to ₹3 lakh loan at 4% interest",
+    "required_fields": ["name", "aadhar", "land_acres", "bank_account", "state"],
+    "eligibility": {
+      "occupation": ["farmer"],
+      "land_acres_min": 0.5
+    },
+    "apply_url": "https://www.nabard.org",
+    "questions_hi": {
+      "land_acres": "Aapke naam kitni zameen registered hai?"
+    }
+  },
+  {
+    "id": "matru_vandana",
+    "name": "Matru Vandana Yojana",
+    "full_name": "Pradhan Mantri Matru Vandana Yojana",
+    "description": "Cash incentive for pregnant and lactating women",
+    "benefit": "₹5000 in 3 installments",
+    "required_fields": ["name", "aadhar", "gender", "pregnancy_status", "bank_account", "state"],
+    "eligibility": {
+      "gender": ["female"],
+      "pregnancy_status": ["pregnant", "lactating"],
+      "first_child": true
+    },
+    "apply_url": "https://pmmvy.wcd.gov.in",
+    "questions_hi": {
+      "pregnancy_status": "Kya aap abhi pregnant hain ya shishu ko dudh pila rahi hain?",
+      "first_child": "Kya yeh aapka pehla bacha hai?"
+    }
+  },
+  {
+    "id": "sc_scholarship",
+    "name": "SC/ST Scholarship",
+    "full_name": "Post Matric Scholarship for SC/ST Students",
+    "description": "Scholarship for SC/ST students studying after class 10",
+    "benefit": "₹1200-₹2250/month stipend + fees covered",
+    "required_fields": ["name", "aadhar", "caste_category", "education_level", "income_annual", "state"],
+    "eligibility": {
+      "caste_category": ["SC", "ST"],
+      "education_level": ["class_11", "class_12", "graduation", "post_graduation"],
+      "income_annual_max": 250000
+    },
+    "apply_url": "https://scholarships.gov.in",
+    "questions_hi": {
+      "education_level": "Aap abhi kaunsi class mein padh rahe hain?",
+      "caste_category": "Aapki jaati category kya hai — SC, ST, OBC, ya General?"
+    }
+  },
+  {
+    "id": "obc_scholarship",
+    "name": "OBC Scholarship",
+    "full_name": "Post Matric Scholarship for OBC Students",
+    "description": "Scholarship for OBC students studying after class 10",
+    "benefit": "₹600-₹1200/month",
+    "required_fields": ["name", "aadhar", "caste_category", "education_level", "income_annual", "state"],
+    "eligibility": {
+      "caste_category": ["OBC"],
+      "education_level": ["class_11", "class_12", "graduation"],
+      "income_annual_max": 100000
+    },
+    "apply_url": "https://scholarships.gov.in",
+    "questions_hi": {
+      "income_annual": "Aapke parivar ki saal ki total aay kitni hai?"
+    }
+  },
+  {
+    "id": "mnrega",
+    "name": "MNREGA",
+    "full_name": "Mahatma Gandhi National Rural Employment Guarantee Act",
+    "description": "100 days guaranteed wage employment per year for rural households",
+    "benefit": "100 days/year employment at minimum wage (~₹220-₹350/day)",
+    "required_fields": ["name", "aadhar", "address", "state", "bank_account"],
+    "eligibility": {
+      "residence": ["rural"],
+      "age_min": 18
+    },
+    "apply_url": "https://nrega.nic.in",
+    "questions_hi": {
+      "residence": "Aap gaon mein rehte hain ya sheher mein?"
+    }
+  }
+]

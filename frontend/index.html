@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>आवाज़ — AAWAAZ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #09090E;
+      --surface:   #111118;
+      --surface2:  #1A1A24;
+      --border:    #2A2A38;
+      --orange:    #FF6B2B;
+      --orange-dim:#FF6B2B22;
+      --green:     #22C55E;
+      --green-dim: #22C55E22;
+      --text:      #F0F0F5;
+      --text2:     #8B8B9E;
+      --red:       #EF4444;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── LAYOUT ─────────────────────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0 16px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    .brand p {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text2);
+      letter-spacing: 3px;
+      margin-top: 3px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .status-pills {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    .pill-gemini {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid #22C55E44;
+    }
+
+    .pill-gemini .pill-dot { background: var(--green); }
+
+    .pill-gemma {
+      background: var(--orange-dim);
+      color: var(--orange);
+      border: 1px solid #FF6B2B44;
+      display: none;
+    }
+
+    .pill-gemma .pill-dot { background: var(--orange); }
+
+    .pill-network {
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+    .pill-network.online {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3B82F6;
+      border: 1px solid #3B82F644;
+    }
+    .pill-network.online .pill-dot { background: #3B82F6; }
+    .pill-network.offline {
+      background: rgba(239, 68, 68, 0.18);
+      color: #EF4444;
+      border: 1px solid #EF444466;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+    }
+    .pill-network.offline .pill-dot { background: #EF4444; }
+
+    /* ── AUDIO WAVEFORM ORB ───────────────────── */
+    #orb-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin: 8px 0;
+      height: 115px;
+    }
+
+    .orb-core {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #3B82F6, #1D4ED8);
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: orb-breathe 4s infinite ease-in-out;
+    }
+
+    .orb-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px dashed rgba(59, 130, 246, 0.3);
+      z-index: 1;
+      transition: all 0.4s ease;
+      pointer-events: none;
+    }
+
+    .ring-1 { width: 84px; height: 84px; animation: orb-spin-right 12s linear infinite; }
+    .ring-2 { width: 102px; height: 102px; animation: orb-spin-left 18s linear infinite; opacity: 0.5; }
+    .ring-3 { width: 120px; height: 120px; border: 1px solid rgba(59, 130, 246, 0.15); animation: orb-breathe 4s infinite ease-in-out; }
+
+    .orb-waves {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 24px;
+    }
+
+    .wave-bar {
+      width: 3px;
+      height: 6px;
+      background: #FFFFFF;
+      border-radius: 2px;
+      transition: height 0.1s ease;
+      opacity: 0.7;
+    }
+
+    .orb-core.listening {
+      background: radial-gradient(circle at 30% 30%, #22C55E, #15803D);
+      box-shadow: 0 0 35px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.5);
+      transform: scale(1.12);
+      animation: none;
+    }
+    .orb-core.listening ~ .orb-ring { border-color: rgba(34, 197, 94, 0.5); }
+    .orb-core.listening ~ .ring-1 { animation: orb-ripple 1.5s infinite ease-out; }
+    .orb-core.listening ~ .ring-2 { animation: orb-ripple 1.5s infinite ease-out 0.5s; }
+    .orb-core.listening .wave-bar { animation: wave-jump 0.6s infinite ease-in-out alternate; opacity: 1; }
+    .orb-core.listening .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+    .orb-core.listening .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+    .orb-core.listening .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+    .orb-core.listening .wave-bar:nth-child(5) { animation-delay: 0.15s; }
+
+    .orb-core.speaking {
+      background: radial-gradient(circle at 30% 30%, #FF6B2B, #C2410C);
+      box-shadow: 0 0 35px rgba(255, 107, 43, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.5);
+      animation: orb-speak-pulse 0.8s infinite alternate ease-in-out;
+    }
+    .orb-core.speaking ~ .orb-ring { border-color: rgba(255, 107, 43, 0.5); }
+    .orb-core.speaking .wave-bar { animation: wave-jump 0.4s infinite ease-in-out alternate; opacity: 1; background: #FFF; }
+    .orb-core.speaking .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .orb-core.speaking .wave-bar:nth-child(3) { animation-delay: 0.05s; }
+    .orb-core.speaking .wave-bar:nth-child(4) { animation-delay: 0.2s; }
+    .orb-core.speaking .wave-bar:nth-child(5) { animation-delay: 0.1s; }
+
+    .orb-core.processing {
+      background: radial-gradient(circle at 30% 30%, #A855F7, #6B21A8);
+      box-shadow: 0 0 35px rgba(168, 85, 247, 0.7);
+    }
+    .orb-core.processing ~ .ring-1 { border-style: solid; border-top-color: #A855F7; border-right-color: transparent; border-bottom-color: #A855F7; border-left-color: transparent; animation: orb-spin-right 1s linear infinite; }
+
+    .orb-status-text {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: color 0.3s ease;
+    }
+
+    @keyframes orb-breathe {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(59, 130, 246, 0.5); }
+    }
+    @keyframes orb-speak-pulse {
+      0% { transform: scale(1.03); }
+      100% { transform: scale(1.15); box-shadow: 0 0 45px rgba(255, 107, 43, 0.8); }
+    }
+    @keyframes orb-ripple {
+      0% { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+    @keyframes orb-spin-right { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes orb-spin-left { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+    @keyframes wave-jump { 0% { height: 4px; } 100% { height: 20px; } }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── CONVERSATION ────────────────────────── */
+    #conversation {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    #conversation::-webkit-scrollbar { width: 4px; }
+    #conversation::-webkit-scrollbar-track { background: transparent; }
+    #conversation::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble-wrap.agent { align-items: flex-start; }
+    .bubble-wrap.user  { align-items: flex-end; }
+
+    .bubble-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--text2);
+      font-family: 'Inter', sans-serif;
+      padding: 0 4px;
+    }
+
+    .bubble {
+      max-width: 85%;
+      padding: 14px 18px;
+      border-radius: 18px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .bubble.agent {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text);
+    }
+
+    .bubble.user {
+      background: var(--orange);
+      border-bottom-right-radius: 4px;
+      color: white;
+    }
+
+    /* Typing indicator */
+    .typing {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 16px 20px;
+    }
+
+    .typing span {
+      width: 8px;
+      height: 8px;
+      background: var(--text2);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+
+    /* ── SCHEMES ZONE ────────────────────────── */
+    #schemes-zone {
+      flex-shrink: 0;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    #schemes-zone.visible { display: block; }
+
+    .schemes-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 1px;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 8px;
+    }
+
+    #scheme-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .scheme-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--green-dim);
+      border: 1px solid #22C55E33;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--green);
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      animation: slideUp 0.4s ease;
+    }
+
+    .scheme-badge .scheme-benefit {
+      color: var(--text2);
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── ACTIONS ─────────────────────────────── */
+    #actions {
+      flex-shrink: 0;
+      padding: 16px 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    .btn-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-action:active { transform: scale(0.93); }
+
+    .btn-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text2);
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      transition: color 0.2s;
+    }
+
+    /* Mic button */
+    #btn-mic .btn-circle {
+      background: var(--orange);
+      box-shadow: 0 0 0 0 #FF6B2B55;
+    }
+
+    #btn-mic.listening .btn-circle {
+      background: var(--red);
+      animation: mic-pulse 1s infinite;
+    }
+
+    #btn-mic.listening .btn-action-label {
+      color: var(--red);
+    }
+
+    @keyframes mic-pulse {
+      0%   { box-shadow: 0 0 0 0 #EF444466; }
+      70%  { box-shadow: 0 0 0 20px #EF444400; }
+      100% { box-shadow: 0 0 0 0 #EF444400; }
+    }
+
+    /* Camera button */
+    #btn-camera .btn-circle {
+      background: var(--surface2);
+      border: 2px solid var(--orange);
+    }
+
+    #btn-camera.scanning .btn-circle {
+      border-color: var(--green);
+      animation: scan-flash 0.5s ease infinite alternate;
+    }
+
+    @keyframes scan-flash {
+      from { box-shadow: 0 0 0 0 #22C55E00; }
+      to   { box-shadow: 0 0 12px 4px #22C55E44; }
+    }
+
+    /* SVG icons */
+    .icon { pointer-events: none; }
+
+    /* ── SCAN OVERLAY ────────────────────────── */
+    #scan-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000000CC;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    #scan-overlay.visible { display: flex; }
+
+    #scan-video {
+      width: 340px;
+      height: 260px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 2px solid var(--orange);
+    }
+
+    .scan-btn {
+      padding: 12px 32px;
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+
+    .scan-cancel {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+
+    #scan-canvas { display: none; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <h1>आवाज़</h1>
+      <p>AAWAAZ · VOICE OF THE PEOPLE</p>
+    </div>
+    <div class="status-pills">
+      <button class="pill pill-network online" id="btn-network" onclick="toggleOfflineMode()" title="Click to simulate 2G / Offline drop">
+        <div class="pill-dot" id="network-dot"></div>
+        <span id="network-label">📶 4G Online</span>
+      </button>
+      <div class="pill pill-gemini" id="pill-gemini">
+        <div class="pill-dot"></div>
+        Gemini Live
+      </div>
+      <div class="pill pill-gemma" id="pill-gemma">
+        <div class="pill-dot"></div>
+        🔒 Gemma Local
+      </div>
+    </div>
+  </header>
+
+  <!-- CONVERSATION -->
+  <div id="conversation">
+    <div class="bubble-wrap agent">
+      <div class="bubble-label">आवाज़</div>
+      <div class="bubble agent">
+        नमस्ते! मैं आवाज़ हूँ। अपनी बात हिंदी में बोलें। आप किन सरकारी योजनाओं के बारे में जानना चाहते हैं?
+      </div>
+    </div>
+  </div>
+
+  <!-- ELIGIBLE SCHEMES -->
+  <div id="schemes-zone">
+    <div class="schemes-label">✅ आप इनके लिए ELIGIBLE हैं</div>
+    <div id="scheme-badges"></div>
+  </div>
+
+  <!-- AUDIO WAVEFORM ORB -->
+  <div id="orb-container">
+    <div class="orb-ring ring-1"></div>
+    <div class="orb-ring ring-2"></div>
+    <div class="orb-ring ring-3"></div>
+    <div class="orb-core" id="orb-core">
+      <div class="orb-waves" id="orb-waves">
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+      </div>
+    </div>
+    <div class="orb-status-text" id="orb-status">तैयार है (Idle)</div>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div id="actions">
+    <button class="btn-action" id="btn-mic" onclick="toggleMic()">
+      <div class="btn-circle">
+        <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </div>
+      <span class="btn-action-label" id="mic-label">बोलें</span>
+    </button>
+
+    <button class="btn-action" id="btn-camera" onclick="openCamera()">
+      <div class="btn-circle">
+        <svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </div>
+      <span class="btn-action-label" id="cam-label">Document</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- SCAN OVERLAY -->
+<div id="scan-overlay">
+  <video id="scan-video" autoplay playsinline></video>
+  <canvas id="scan-canvas"></canvas>
+  <div style="display:flex;gap:12px">
+    <button class="scan-btn" onclick="capturePhoto()">📸 Scan करें</button>
+    <button class="scan-btn scan-cancel" onclick="closeCamera()">रद्द करें</button>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:8000';
+  let isListening = false;
+  let autoListen = false;
+  let isSpeaking = false;
+  let isProcessing = false;
+  let isOfflineMode = false;
+  let recognition = null;
+  let videoStream = null;
+  let knownSchemes = new Set();
+
+  function toggleOfflineMode() {
+    isOfflineMode = !isOfflineMode;
+    const btn = document.getElementById('btn-network');
+    const label = document.getElementById('network-label');
+    if (isOfflineMode) {
+      btn.className = 'pill pill-network offline';
+      label.textContent = '📴 Offline (2G/No Net)';
+      setMode('gemma_local');
+      addBubble('agent', '📴 [Offline Demo Active] इंटरनेट connection नहीं है। अब आवाज़ local-first mode (Gemma + Local DB Queue) पर चल रहा है। आपकी जानकारी 100% local सुरक्षित रहेगी।');
+      speakHindi('इंटरनेट connection नहीं है। अब आवाज़ local mode पर चल रहा है।');
+    } else {
+      btn.className = 'pill pill-network online';
+      label.textContent = '📶 4G Online';
+      setMode('gemini_live');
+      addBubble('agent', '📶 [Online Restored] इंटरनेट वापस आ गया। Gemini 2.0 Live active.');
+      speakHindi('इंटरनेट वापस आ गया। Gemini Live active.');
+    }
+    updateOrbStatus();
+  }
+
+  function updateOrbStatus() {
+    const orb = document.getElementById('orb-core');
+    const status = document.getElementById('orb-status');
+    if (!orb || !status) return;
+
+    orb.className = 'orb-core';
+
+    if (isProcessing) {
+      orb.classList.add('processing');
+      status.textContent = 'सोच रहा हूँ... (Thinking)';
+      status.style.color = '#A855F7';
+    } else if (isSpeaking) {
+      orb.classList.add('speaking');
+      status.textContent = 'बोल रहा हूँ... (Speaking)';
+      status.style.color = '#FF6B2B';
+    } else if (isListening) {
+      orb.classList.add('listening');
+      status.textContent = autoListen ? 'सुन रहा हूँ (Auto Listening)...' : 'सुन रहा हूँ... (Listening)';
+      status.style.color = '#22C55E';
+    } else {
+      status.textContent = isOfflineMode ? '📴 Offline Mode Active (Idle)' : 'तैयार है (Idle)';
+      status.style.color = 'var(--text-muted)';
+    }
+  }
+
+  function startListeningSafely() {
+    if (!autoListen || isSpeaking || isProcessing) return;
+    if (!recognition) recognition = setupSpeech();
+    if (!recognition || isListening) return;
+    try {
+      recognition.start();
+    } catch(e) {
+      setTimeout(() => {
+        if (!autoListen || isSpeaking || isProcessing || isListening) return;
+        try {
+          recognition = setupSpeech();
+          recognition.start();
+        } catch(e2) {
+          console.error('Auto-listen restart error:', e2);
+        }
+      }, 400);
+    }
+  }
+
+  // ── Speech Recognition setup ──────────────────────────────
+  function setupSpeech() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      console.warn('Speech Recognition not supported');
+      return null;
+    }
+    const r = new SR();
+    r.lang = 'hi-IN';
+    r.continuous = false;
+    r.interimResults = false;
+
+    r.onstart = () => {
+      isListening = true;
+      document.getElementById('btn-mic').classList.add('listening');
+      document.getElementById('mic-label').textContent = autoListen ? 'सुन रहा हूँ (Auto)...' : 'सुन रहा हूँ...';
+      updateOrbStatus();
+    };
+
+    r.onend = () => {
+      isListening = false;
+      document.getElementById('btn-mic').classList.remove('listening');
+      if (autoListen) {
+        if (isProcessing) {
+          document.getElementById('mic-label').textContent = 'सोच रहा हूँ...';
+        } else if (isSpeaking) {
+          document.getElementById('mic-label').textContent = 'बोल रहा हूँ...';
+        } else {
+          document.getElementById('mic-label').textContent = 'सुन रहा हूँ (Auto)...';
+          setTimeout(startListeningSafely, 300);
+        }
+      } else {
+        document.getElementById('mic-label').textContent = 'बोलें';
+      }
+      updateOrbStatus();
+    };
+
+    r.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      console.log('Heard:', transcript);
+      addBubble('user', transcript);
+      sendToServer(transcript);
+    };
+
+    r.onerror = (e) => {
+      console.error('Speech error:', e.error);
+      isListening = false;
+      document.getElementById('btn-mic').classList.remove('listening');
+      if (!autoListen) document.getElementById('mic-label').textContent = 'बोलें';
+      if (e.error === 'not-allowed') {
+        autoListen = false;
+        document.getElementById('mic-label').textContent = 'बोलें';
+        addBubble('agent', 'माइक्रोफोन की अनुमति दें।');
+      }
+      updateOrbStatus();
+    };
+
+    return r;
+  }
+
+  function toggleMic() {
+    if (!recognition) recognition = setupSpeech();
+    if (!recognition) {
+      // Fallback: text input
+      const text = prompt('टाइप करें (demo mode):');
+      if (text) { addBubble('user', text); sendToServer(text); }
+      return;
+    }
+    if (isListening || autoListen) {
+      autoListen = false;
+      isSpeaking = false;
+      isProcessing = false;
+      if (isListening) recognition.stop();
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      document.getElementById('btn-mic').classList.remove('listening');
+      document.getElementById('mic-label').textContent = 'बोलें';
+    } else {
+      autoListen = true;
+      try { recognition.start(); } catch(e) { recognition = setupSpeech(); recognition.start(); }
+    }
+    updateOrbStatus();
+  }
+
+  // ── TTS ───────────────────────────────────────────────────
+  function speakHindi(text) {
+    if (!window.speechSynthesis) {
+      isSpeaking = false;
+      updateOrbStatus();
+      if (autoListen) setTimeout(startListeningSafely, 500);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    isSpeaking = true;
+    if (autoListen) document.getElementById('mic-label').textContent = 'बोल रहा हूँ...';
+    updateOrbStatus();
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'hi-IN';
+    u.rate = 0.88;
+    u.pitch = 1.0;
+
+    // Try to find a Hindi voice
+    const voices = window.speechSynthesis.getVoices();
+    const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
+    if (hindiVoice) u.voice = hindiVoice;
+
+    u.onend = () => {
+      isSpeaking = false;
+      updateOrbStatus();
+      if (autoListen) {
+        document.getElementById('mic-label').textContent = 'सुन रहा हूँ (Auto)...';
+        setTimeout(startListeningSafely, 400);
+      }
+    };
+    u.onerror = () => {
+      isSpeaking = false;
+      updateOrbStatus();
+      if (autoListen) setTimeout(startListeningSafely, 400);
+    };
+
+    window.speechSynthesis.speak(u);
+  }
+
+  // ── UI Helpers ────────────────────────────────────────────
+  function addBubble(role, text) {
+    const conv = document.getElementById('conversation');
+
+    const wrap = document.createElement('div');
+    wrap.className = `bubble-wrap ${role}`;
+
+    if (role === 'agent') {
+      const label = document.createElement('div');
+      label.className = 'bubble-label';
+      label.textContent = 'आवाज़';
+      wrap.appendChild(label);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}`;
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+
+    conv.appendChild(wrap);
+    conv.scrollTop = conv.scrollHeight;
+    return wrap;
+  }
+
+  function showTyping() {
+    const conv = document.getElementById('conversation');
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-wrap agent';
+    wrap.id = 'typing-indicator';
+
+    const label = document.createElement('div');
+    label.className = 'bubble-label';
+    label.textContent = 'आवाज़';
+    wrap.appendChild(label);
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble agent typing';
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+    wrap.appendChild(bubble);
+
+    conv.appendChild(wrap);
+    conv.scrollTop = conv.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+  }
+
+  function setMode(mode) {
+    const gemini = document.getElementById('pill-gemini');
+    const gemma = document.getElementById('pill-gemma');
+    if (mode === 'gemma_local') {
+      gemini.style.display = 'none';
+      gemma.style.display = 'flex';
+    } else {
+      gemini.style.display = 'flex';
+      gemma.style.display = 'none';
+    }
+  }
+
+  function updateSchemes(schemes) {
+    if (!schemes || schemes.length === 0) return;
+
+    const zone = document.getElementById('schemes-zone');
+    const badges = document.getElementById('scheme-badges');
+    zone.classList.add('visible');
+
+    schemes.forEach((s, i) => {
+      if (knownSchemes.has(s.name)) return;
+      knownSchemes.add(s.name);
+
+      setTimeout(() => {
+        const badge = document.createElement('div');
+        badge.className = 'scheme-badge';
+        badge.innerHTML = `
+          <span>${s.name}</span>
+          <span class="scheme-benefit">• ${s.benefit}</span>
+        `;
+        badges.appendChild(badge);
+      }, i * 250);
+    });
+  }
+
+  // ── API Calls ─────────────────────────────────────────────
+  async function sendToServer(message) {
+    showTyping();
+    isProcessing = true;
+    updateOrbStatus();
+    if (isListening && recognition) recognition.stop();
+    if (autoListen) document.getElementById('mic-label').textContent = 'सोच रहा हूँ...';
+
+    try {
+      const res = await fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, simulated_offline: isOfflineMode })
+      });
+
+      const data = await res.json();
+      removeTyping();
+      isProcessing = false;
+      updateOrbStatus();
+
+      addBubble('agent', data.response);
+      speakHindi(data.response);
+      setMode(data.mode || 'gemini_live');
+
+      if (data.eligible_schemes?.length > 0) {
+        updateSchemes(data.eligible_schemes);
+      }
+
+    } catch (err) {
+      removeTyping();
+      console.error('Server error:', err);
+
+      // Retry once
+      setTimeout(async () => {
+        try {
+          const res = await fetch(`${API}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, simulated_offline: isOfflineMode })
+          });
+          const data = await res.json();
+          isProcessing = false;
+          updateOrbStatus();
+          addBubble('agent', data.response);
+          speakHindi(data.response);
+        } catch(e) {
+          isProcessing = false;
+          isSpeaking = false;
+          updateOrbStatus();
+          addBubble('agent', 'सर्वर से जुड़ नहीं पा रहे। कृपया दोबारा कोशिश करें।');
+          if (autoListen) setTimeout(startListeningSafely, 1000);
+        }
+      }, 2000);
+    }
+  }
+
+  // ── Camera / Document Scan ────────────────────────────────
+  async function openCamera() {
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      document.getElementById('scan-video').srcObject = videoStream;
+      document.getElementById('scan-overlay').classList.add('visible');
+      document.getElementById('btn-camera').classList.add('scanning');
+      document.getElementById('cam-label').textContent = 'स्कैन...';
+    } catch(e) {
+      console.error('Camera error:', e);
+      addBubble('agent', 'कैमरा उपलब्ध नहीं है। Aadhar number बोलें।');
+    }
+  }
+
+  function closeCamera() {
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+    document.getElementById('scan-overlay').classList.remove('visible');
+    document.getElementById('btn-camera').classList.remove('scanning');
+    document.getElementById('cam-label').textContent = 'Document';
+  }
+
+  async function capturePhoto() {
+    const video = document.getElementById('scan-video');
+    const canvas = document.getElementById('scan-canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+    closeCamera();
+    setMode('gemma_local'); // scanning is always local
+
+    addBubble('user', '📄 [Document scan किया]');
+    showTyping();
+    isProcessing = true;
+    updateOrbStatus();
+    if (isListening && recognition) recognition.stop();
+    if (autoListen) document.getElementById('mic-label').textContent = 'स्कैन हो रहा है...';
+
+    try {
+      const res = await fetch(`${API}/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData, doc_type: 'aadhar' })
+      });
+      const data = await res.json();
+      removeTyping();
+      isProcessing = false;
+      updateOrbStatus();
+
+      addBubble('agent', data.response);
+      speakHindi(data.response);
+
+      if (data.eligible_schemes?.length > 0) {
+        updateSchemes(data.eligible_schemes);
+      }
+
+    } catch(e) {
+      removeTyping();
+      isProcessing = false;
+      isSpeaking = false;
+      updateOrbStatus();
+      addBubble('agent', 'Document scan में समस्या आई। Aadhar number बोलें।');
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  window.speechSynthesis?.getVoices(); // preload voices
+
+  // Check backend health
+  fetch(`${API}/health`)
+    .then(r => r.json())
+    .then(d => {
+      console.log('Backend:', d);
+      if (!d.gemini) {
+        console.warn('Gemini not configured — using fallback responses');
+      }
+    })
+    .catch(() => {
+      console.warn('Backend not running on :8000');
+      addBubble('agent', '⚠️ Server से connect नहीं हो पा रहे। python server.py चलाएं।');
+    });
+</script>
+</body>
+</html>

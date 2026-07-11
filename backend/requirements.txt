@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+google-genai
+python-dotenv
+cryptography
+Pillow
+requests
