@@ -380,8 +380,9 @@ async def fill_scheme_form(
                     otp_btn = await page.wait_for_selector(otp_sel, timeout=5000)
                     if otp_btn:
                         # Pulse-highlight the OTP button in red to draw attention
+                        safe_sel = otp_sel.replace("'", "\\'").replace('"', '\\"')
                         await page.evaluate(f"""
-                            const btn = document.querySelector('{otp_sel.replace("'", "\\'")}');
+                            const btn = document.querySelector('{safe_sel}');
                             if (btn) {{
                                 btn.style.border = '3px solid #ef4444';
                                 btn.style.boxShadow = '0 0 15px #ef4444';
