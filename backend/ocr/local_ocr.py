@@ -27,12 +27,16 @@ except ImportError:
 
 try:
     import pytesseract
+    import os
+    # Auto-detect Windows UB-Mannheim default tesseract path if not in PATH
+    if os.name == 'nt' and os.path.exists(r'C:\Program Files\Tesseract-OCR\tesseract.exe'):
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     TESSERACT_AVAILABLE = True
     # Verify tesseract binary exists
     pytesseract.get_tesseract_version()
-except Exception:
+except Exception as e:
     TESSERACT_AVAILABLE = False
-    print("[OCR] Tesseract not installed — using mock mode. Run: apt install tesseract-ocr tesseract-ocr-hin")
+    print(f"[OCR] Tesseract binary not accessible ({e}) — using mock mode. (If on Windows: winget install UB-Mannheim.TesseractOCR)")
 
 
 # ── Image Pre-Processing ─────────────────────────────────────────
