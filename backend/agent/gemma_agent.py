@@ -65,26 +65,29 @@ def build_prompt(state: ConversationState, user_input: str, schemes: list) -> st
 
 
 def query_gemma_ollama(prompt: str, model: str = "gemma4:e2b") -> Optional[str]:
-    """Query Gemma 4 via Ollama (E2B/E4B for local-first inference)."""
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": model,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "temperature": 0.7,
-                    "num_predict": 200,
-                    "stop": ["\nUser:", "\nAawaaz:"]
-                }
-            },
-            timeout=30
-        )
-        if response.status_code == 200:
-            return response.json().get("response", "").strip()
-    except Exception as e:
-        print(f"[Ollama error]: {e}")
+    """Query Gemma 4 via Ollama (with automatic fall-through to installed gemma2:2b if needed)."""
+    for target_model in [model, "gemma2:2b"]:
+        try:
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": target_model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.7,
+                        "num_predict": 200,
+                        "stop": ["\nUser:", "\nAawaaz:"]
+                    }
+                },
+                timeout=30
+            )
+            if response.status_code == 200:
+                print(f"[Ollama] Successful local response from model '{target_model}'")
+                return response.json().get("response", "").strip()
+        except Exception as e:
+            print(f"[Ollama error with {target_model}]: {e}")
+            break
     return None
 
 
