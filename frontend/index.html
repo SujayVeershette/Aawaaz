@@ -868,6 +868,14 @@
     const badges = document.getElementById('scheme-badges');
     zone.classList.add('visible');
 
+    const schemeMap = {
+      'PM-KISAN': 'pm_kisan',
+      'PMAY-G': 'pmay_g',
+      'Ayushman Bharat': 'ayushman_bharat',
+      'PM Ujjwala Yojana': 'pm_ujjwala',
+      'Jan Dhan Yojana': 'jan_dhan'
+    };
+
     schemes.forEach((s, i) => {
       if (knownSchemes.has(s.name)) return;
       knownSchemes.add(s.name);
@@ -875,13 +883,61 @@
       setTimeout(() => {
         const badge = document.createElement('div');
         badge.className = 'scheme-badge';
+        badge.style.display = 'flex';
+        badge.style.alignItems = 'center';
+        badge.style.justifyContent = 'space-between';
+        badge.style.gap = '12px';
+        const schemeId = s.id || schemeMap[s.name] || 'pm_kisan';
         badge.innerHTML = `
-          <span>${s.name}</span>
-          <span class="scheme-benefit">• ${s.benefit}</span>
+          <div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 1.05em;">${s.name}</div>
+            <div class="scheme-benefit" style="font-size: 0.9em; margin-top: 2px;">• ${s.benefit}</div>
+          </div>
+          <button onclick="triggerFillForm('${schemeId}', '${s.name}', this)" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85em; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); transition: all 0.2s; white-space: nowrap;">
+            ⚡ Auto-Fill Form
+          </button>
         `;
         badges.appendChild(badge);
       }, i * 250);
     });
+  }
+
+  async function triggerFillForm(schemeId, schemeName, btn) {
+    btn.innerHTML = '⏳ Opening Portal...';
+    btn.disabled = true;
+    btn.style.background = '#6b7280';
+
+    addBubble('user', `${schemeName} का फॉर्म भरें`);
+    addBubble('agent', `🌐 <b>${schemeName}</b> का सरकारी पोर्टल Chrome browser में खुल रहा है...<br><i>कृपया स्क्रीन पर देखें, Playwright आपका फॉर्म अपने आप भरेगा!</i>`);
+    speakHindi(`${schemeName} का सरकारी पोर्टल खुल रहा है। कृपया स्क्रीन देखें!`);
+
+    try {
+      const res = await fetch(`${API}/fill-form`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheme_id: schemeId, headless: false })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        btn.innerHTML = '✅ Form Filled (OTP Needed)';
+        btn.style.background = '#059669';
+        const fieldsList = (data.fields_filled || []).map(f => `• <b>${f.field}</b>: ${f.value}`).join('<br>');
+        addBubble('agent', `✅ <b>${schemeName} Application Form Auto-Filled!</b><br><br><b>भरे गए फ़ील्ड्स:</b><br>${fieldsList}<br><br>⚠️ <i>पोर्टल पर लाल रंग से हाइलाइट किए गए <b>OTP</b> बटन पर रुक गया है। कृपया अपना OTP डालकर सबमिट करें!</i>`);
+        speakHindi("आपका फॉर्म भर दिया गया है! कृपया अपना OTP डालकर सबमिट करें।");
+      } else {
+        addBubble('agent', `⚠️ फॉर्म भरने में समस्या आई: ${data.message || 'पोर्टल लोड नहीं हुआ।'}`);
+        btn.innerHTML = '⚡ Try Again';
+        btn.disabled = false;
+        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      }
+    } catch (e) {
+      console.error(e);
+      addBubble('agent', `⚠️ Server से कनेक्ट नहीं हो पाया।`);
+      btn.innerHTML = '⚡ Try Again';
+      btn.disabled = false;
+      btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    }
   }
 
   // ── API Calls ─────────────────────────────────────────────

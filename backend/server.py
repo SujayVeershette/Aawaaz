@@ -218,7 +218,7 @@ def chat(payload: Optional[ChatRequest] = None):
         "response": agent_response,
         "mode": mode,
         "eligible_schemes": [
-            {"name": s["name"], "benefit": s["benefit"]}
+            {"id": s["id"], "name": s["name"], "benefit": s["benefit"]}
             for s in eligible
         ],
         "profile_complete": len(state.profile.to_dict()),
@@ -286,7 +286,7 @@ def scan(payload: Optional[ScanRequest] = None):
         "mode": "gemma_local",        # OCR always runs locally — offline safe
         "ocr_engine": ocr_status(),
         "eligible_schemes": [
-            {"name": s["name"], "benefit": s["benefit"]}
+            {"id": s["id"], "name": s["name"], "benefit": s["benefit"]}
             for s in eligible
         ],
     }
@@ -367,7 +367,7 @@ def status():
 
     return {
         "eligible_schemes": [
-            {"name": s["name"], "benefit": s["benefit"]}
+            {"id": s["id"], "name": s["name"], "benefit": s["benefit"]}
             for s in eligible
         ],
         "mode": "gemini_live",
