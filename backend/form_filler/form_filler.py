@@ -48,7 +48,7 @@ except ImportError:
 SCHEME_FORMS = {
     "pm_kisan": {
         "name": "PM-KISAN",
-        "url": "https://pmkisan.gov.in/RegistrationForm.aspx",
+        "url": "https://pmkisan.gov.in/RegistrationFormNew.aspx",
         "fields": [
             # The actual PM-KISAN form uses Aadhaar for lookup first
             # After lookup, these fields appear:
@@ -373,6 +373,15 @@ async def fill_scheme_form(
                     fields_skipped.append(f"{label} (error: {str(e)[:40]})")
                     print(f"[FormFiller] ✗ Error filling '{label}': {e}")
 
+            # ── 3b. Intelligent Live DOM Auto-Filler (Dynamic Page Discovery) ──
+            try:
+                live_discovered = await _fill_live_dom_fields(page, profile, config["highlight_color"])
+                if live_discovered:
+                    fields_filled.extend(live_discovered)
+                    print(f"[FormFiller] ✓ Live DOM Discovery filled {len(live_discovered)} additional elements: {live_discovered}")
+            except Exception as e:
+                print(f"[FormFiller] Live DOM discovery note: {e}")
+
             # ── 4. Highlight the OTP button and PAUSE ──
             otp_sel = config.get("otp_trigger")
             if otp_sel:
@@ -498,6 +507,95 @@ async def _fill_select(page, selector: str, value: str):
         await page.select_option(selector, label=value)
     except Exception:
         await page.select_option(selector, value=value)
+
+
+async def _fill_live_dom_fields(page, profile: dict, color: str = "#4ade80") -> list:
+    """
+    Intelligent Live DOM Auto-Filler (`The Holy Grail of Form Filling`).
+    Scans the live DOM for all visible inputs, selects, and textareas,
+    reads their placeholder, name, id, aria-label, and associated <label> text,
+    and automatically matches them to the user's profile data!
+    """
+    KEYWORD_MAP = {
+        "aadhar": ["aadhar", "adhar", "uid", "12 digit", "unique id"],
+        "mobile": ["mobile", "phone", "contact", "cell"],
+        "name": ["farmer name", "applicant name", "beneficiary name", "student name", "full name", "your name", "name"],
+        "village": ["village", "address", "gram", "panchayat", "habitation"],
+        "district": ["district", "jila", "zila"],
+        "state": ["state", "rajya"],
+        "bank_account": ["account", "acc no", "bank acc", "ac no", "a/c"],
+        "ifsc": ["ifsc", "branch code"],
+        "age": ["age", "dob", "birth"],
+        "caste_category": ["category", "caste", "social"],
+    }
+    
+    script = """
+    ([profile, keywordMap, color]) => {
+        const results = [];
+        const inputs = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea'));
+        
+        for (const el of inputs) {
+            if (el.value && el.value.trim().length > 0 && el.type !== 'select-one') continue;
+            if (el.getAttribute('data-aawaaz-filled') === 'true') continue;
+            if (el.offsetParent === null) continue; // hidden element
+            
+            let contextText = (el.id + ' ' + el.name + ' ' + el.placeholder + ' ' + (el.getAttribute('aria-label') || '')).toLowerCase();
+            
+            if (el.id) {
+                const lbl = document.querySelector(`label[for="${el.id}"]`);
+                if (lbl) contextText += ' ' + lbl.innerText.toLowerCase();
+            }
+            if (el.parentElement) {
+                contextText += ' ' + el.parentElement.innerText.toLowerCase();
+            }
+            
+            let matchedKey = null;
+            for (const [key, keywords] of Object.entries(keywordMap)) {
+                if (!profile[key]) continue;
+                for (const kw of keywords) {
+                    if (contextText.includes(kw)) {
+                        matchedKey = key;
+                        break;
+                    }
+                }
+                if (matchedKey) break;
+            }
+            
+            if (matchedKey && profile[matchedKey]) {
+                const val = String(profile[matchedKey]);
+                el.focus();
+                if (el.tagName === 'SELECT') {
+                    let optionFound = false;
+                    for (const opt of el.options) {
+                        if (opt.text.toLowerCase().includes(val.toLowerCase()) || opt.value.toLowerCase().includes(val.toLowerCase())) {
+                            el.value = opt.value;
+                            optionFound = true;
+                            break;
+                        }
+                    }
+                    if (!optionFound && el.options.length > 1) {
+                        el.selectedIndex = 1;
+                    }
+                } else {
+                    el.value = val;
+                }
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                el.style.background = color;
+                el.style.border = '2px solid ' + color;
+                el.setAttribute('data-aawaaz-filled', 'true');
+                results.push({ label: matchedKey.toUpperCase() + ' (' + (el.placeholder || el.name || el.id || 'Field') + ')', value: val });
+            }
+        }
+        return results;
+    }
+    """
+    try:
+        live_results = await page.evaluate(script, [profile, KEYWORD_MAP, color])
+        return live_results or []
+    except Exception as e:
+        print(f"[FormFiller] Live DOM discovery note: {e}")
+        return []
 
 
 # ── Sync Wrapper (for FastAPI which uses asyncio internally) ──────

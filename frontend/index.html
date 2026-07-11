@@ -933,7 +933,7 @@
       if (data.success) {
         btn.innerHTML = '✅ Form Filled (OTP Needed)';
         btn.style.background = '#059669';
-        const fieldsList = (data.fields_filled || []).map(f => `• <b>${f.field}</b>: ${f.value}`).join('<br>');
+        const fieldsList = (data.fields_filled || []).map(f => `• <b>${f.label || f.field || 'Field'}</b>: ${f.value}`).join('<br>');
         addBubble('agent', `✅ <b>${schemeName} Application Form Auto-Filled!</b><br><br><b>भरे गए फ़ील्ड्स:</b><br>${fieldsList}<br><br>⚠️ <i>पोर्टल पर लाल रंग से हाइलाइट किए गए <b>OTP</b> बटन पर रुक गया है। कृपया अपना OTP डालकर सबमिट करें!</i>`);
         speakHindi("आपका फॉर्म भर दिया गया है! कृपया अपना OTP डालकर सबमिट करें।");
       } else {
